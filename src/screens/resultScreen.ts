@@ -30,7 +30,7 @@ export function renderResultScreen(
   return {
     showRank(rank: number) {
       rankEl.dataset.state = "ready";
-      rankEl.innerHTML = `현재 <strong>${rank}</strong>등 (잠정)`;
+      rankEl.innerHTML = `현재 <strong>${rank}</strong>등`;
     },
   };
 }

@@ -26,3 +26,4 @@ firestore-debug.log
 *.njsproj
 *.sln
 *.sw?
+.claude/
