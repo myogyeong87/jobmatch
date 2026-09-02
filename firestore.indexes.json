@@ -1,0 +1,13 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "roundScores",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "round", "order": "ASCENDING" },
+        { "fieldPath": "timeMs", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

@@ -1,0 +1,347 @@
+:root {
+  --bg: #eef2ff;
+  --bg-accent: #c7d2fe;
+  --ink: #1e1b4b;
+  --ink-soft: #4c1d95;
+  --name-bg: #4f46e5;
+  --name-bg-matched: #a5b4fc;
+  --task-bg: #f59e0b;
+  --task-bg-matched: #fde68a;
+  --card-back: #312e81;
+  --wrong: #ef4444;
+  --surface: #ffffff;
+  --shadow: 0 10px 25px rgba(30, 27, 75, 0.18);
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", -apple-system,
+    BlinkMacSystemFont, sans-serif;
+  background: linear-gradient(160deg, var(--bg), var(--bg-accent));
+  color: var(--ink);
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+#app {
+  height: 100dvh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+}
+
+.screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: clamp(0.75rem, 2vw, 1.5rem);
+}
+
+/* ---------- 시작 화면 ---------- */
+.start-screen {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 1rem;
+}
+
+.start-title {
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  margin: 0;
+  color: var(--ink-soft);
+}
+
+.start-subtitle {
+  margin: 0 0 1rem;
+  font-size: clamp(1rem, 2vw, 1.3rem);
+  color: var(--ink);
+  opacity: 0.75;
+}
+
+.start-form {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.start-input {
+  font-size: clamp(1.1rem, 2.2vw, 1.4rem);
+  padding: 0.85rem 1.2rem;
+  border-radius: 1rem;
+  border: 2px solid var(--bg-accent);
+  outline: none;
+  min-width: min(60vw, 320px);
+  background: var(--surface);
+}
+
+.start-input:focus {
+  border-color: var(--name-bg);
+}
+
+.start-button {
+  font-size: clamp(1.1rem, 2.2vw, 1.4rem);
+  padding: 0.85rem 2rem;
+  border-radius: 1rem;
+  border: none;
+  background: var(--name-bg);
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.start-button:disabled {
+  opacity: 0.6;
+}
+
+.start-error {
+  color: var(--wrong);
+  font-weight: 600;
+}
+
+/* ---------- 라운드 화면 ---------- */
+.round-screen {
+  gap: clamp(0.5rem, 1.5vh, 1rem);
+}
+
+.round-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 0.25rem;
+  flex: 0 0 auto;
+}
+
+.round-indicator {
+  font-size: clamp(1.1rem, 2.4vw, 1.6rem);
+  font-weight: 800;
+  color: var(--ink-soft);
+}
+
+.round-timer {
+  font-size: clamp(1.1rem, 2.4vw, 1.6rem);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.card-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  gap: clamp(0.4rem, 1.1vw, 0.9rem);
+  min-height: 0;
+}
+
+.card {
+  position: relative;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  perspective: 900px;
+  min-height: 0;
+  min-width: 0;
+}
+
+.card-inner {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
+  transition: transform 0.5s ease;
+  transform: rotateY(0deg);
+}
+
+.card--facedown .card-inner {
+  transform: rotateY(180deg);
+}
+
+.card-face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: clamp(0.35rem, 1vw, 0.7rem);
+  border-radius: 0.9rem;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  box-shadow: var(--shadow);
+  line-height: 1.25;
+  font-weight: 600;
+  color: white;
+  font-size: clamp(0.72rem, 1.35vw, 1.05rem);
+  word-break: keep-all;
+}
+
+.card-face--front {
+  transform: rotateY(0deg);
+  -webkit-transform: rotateY(0deg);
+}
+
+.card--name .card-face--front {
+  background: var(--name-bg);
+}
+
+.card--task .card-face--front {
+  background: var(--task-bg);
+}
+
+.card-face--back {
+  transform: rotateY(180deg);
+  -webkit-transform: rotateY(180deg);
+  background: repeating-linear-gradient(
+    135deg,
+    var(--card-back),
+    var(--card-back) 10px,
+    #3730a3 10px,
+    #3730a3 20px
+  );
+}
+
+.card--selected .card-face--front {
+  outline: 4px solid var(--ink-soft);
+  outline-offset: -4px;
+}
+
+.card--matched {
+  cursor: default;
+  pointer-events: none;
+}
+
+.card--name.card--matched .card-face--front {
+  background: var(--name-bg-matched);
+}
+
+.card--task.card--matched .card-face--front {
+  background: var(--task-bg-matched);
+}
+
+.card--matched .card-face--front {
+  opacity: 0.5;
+}
+
+.card--wrong .card-face--front {
+  animation: shake 0.5s ease;
+  outline: 4px solid var(--wrong);
+  outline-offset: -4px;
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-8px);
+  }
+  40% {
+    transform: translateX(8px);
+  }
+  60% {
+    transform: translateX(-6px);
+  }
+  80% {
+    transform: translateX(6px);
+  }
+}
+
+/* ---------- 결과 화면 ---------- */
+.result-screen {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 0.75rem;
+}
+
+.result-round {
+  font-size: clamp(1.3rem, 3vw, 1.9rem);
+  font-weight: 700;
+  color: var(--ink-soft);
+  margin: 0;
+}
+
+.result-time {
+  font-size: clamp(3rem, 9vw, 5.5rem);
+  font-weight: 800;
+  margin: 0;
+  color: var(--ink);
+}
+
+.result-unit {
+  font-size: 0.4em;
+  margin-left: 0.3rem;
+  opacity: 0.7;
+}
+
+.result-rank {
+  font-size: clamp(1.2rem, 2.6vw, 1.7rem);
+  margin: 0;
+  min-height: 1.5em;
+}
+
+.result-rank strong {
+  color: var(--name-bg);
+  font-size: 1.2em;
+}
+
+.result-next {
+  opacity: 0.6;
+  font-size: clamp(0.9rem, 1.8vw, 1.1rem);
+  margin: 0;
+}
+
+/* ---------- 최종 화면 ---------- */
+.final-screen {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 1rem;
+}
+
+.final-title {
+  font-size: clamp(1.6rem, 3.6vw, 2.4rem);
+  color: var(--ink-soft);
+  margin: 0;
+}
+
+.final-subtitle {
+  opacity: 0.7;
+  margin: 0;
+  font-size: clamp(1rem, 2vw, 1.2rem);
+}
+
+.final-time {
+  font-size: clamp(3rem, 9vw, 5.5rem);
+  font-weight: 800;
+  margin: 0;
+}
+
+.final-unit {
+  font-size: 0.4em;
+  margin-left: 0.3rem;
+  opacity: 0.7;
+}
+
+.final-restart {
+  margin-top: 1rem;
+  font-size: clamp(1rem, 2vw, 1.3rem);
+  padding: 0.85rem 2rem;
+  border-radius: 1rem;
+  border: none;
+  background: var(--name-bg);
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
