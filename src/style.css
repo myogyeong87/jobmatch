@@ -345,3 +345,91 @@ body {
   font-weight: 700;
   cursor: pointer;
 }
+
+/* ---------- 교사용 진행 현황 화면 ---------- */
+.teacher-screen {
+  height: 100%;
+  overflow-y: auto;
+  padding: clamp(1rem, 3vw, 2.5rem);
+  user-select: text;
+}
+
+.teacher-header h1 {
+  margin: 0;
+  font-size: clamp(1.5rem, 3vw, 2.1rem);
+  color: var(--ink-soft);
+}
+
+.teacher-subtitle {
+  margin: 0.3rem 0 0;
+  opacity: 0.7;
+}
+
+.teacher-panels {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.teacher-panel {
+  background: var(--surface);
+  border-radius: 1rem;
+  padding: 1.25rem 1.5rem;
+  box-shadow: var(--shadow);
+}
+
+.teacher-panel h2 {
+  margin: 0 0 0.25rem;
+  font-size: clamp(1.1rem, 2vw, 1.4rem);
+  color: var(--ink-soft);
+}
+
+.teacher-panel-desc {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  opacity: 0.65;
+}
+
+.teacher-empty {
+  opacity: 0.6;
+}
+
+.teacher-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: clamp(0.85rem, 1.4vw, 1rem);
+}
+
+.teacher-table th,
+.teacher-table td {
+  text-align: left;
+  padding: 0.55rem 0.5rem;
+  border-bottom: 1px solid var(--bg-accent);
+}
+
+.teacher-table th {
+  color: var(--ink-soft);
+  font-weight: 700;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.85em;
+  font-weight: 600;
+  color: white;
+}
+
+.status-badge--playing {
+  background: var(--name-bg);
+}
+
+.status-badge--result {
+  background: var(--task-bg);
+}
+
+.status-badge--finished {
+  background: #16a34a;
+}

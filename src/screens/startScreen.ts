@@ -5,7 +5,7 @@ export function renderStartScreen(
   root.innerHTML = `
     <section class="screen start-screen">
       <h1 class="start-title">직업 짝맞추기</h1>
-      <p class="start-subtitle">이름(또는 모둠명)을 입력하고 게임을 시작하세요</p>
+      <p class="start-subtitle">이름이나 모둠 이름을 적고 시작해요</p>
       <form class="start-form" novalidate>
         <input
           class="start-input"
@@ -34,12 +34,12 @@ export function renderStartScreen(
     const name = input.value.trim();
     if (!name) {
       errorEl.hidden = false;
-      errorEl.textContent = "이름을 입력해 주세요.";
+      errorEl.textContent = "이름을 먼저 적어주세요.";
       return;
     }
     errorEl.hidden = true;
     button.disabled = true;
-    button.textContent = "시작 중...";
+    button.textContent = "시작하는 중...";
     onSubmit(name);
   });
 }

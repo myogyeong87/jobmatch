@@ -31,6 +31,24 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // 교사 진행 현황 화면(teacher.html)이 실시간으로 읽는 학생별 현재 상태.
+    // 문서 ID = 학생 표시 이름. 학생 기기가 라운드 진행 중 계속 덮어쓴다(create/update만 허용).
+    match /sessions/{sessionId} {
+      allow read: if true;
+      allow create, update: if request.resource.data.keys().hasOnly(['name', 'currentRound', 'status', 'lastRoundRank', 'updatedAt'])
+        && request.resource.data.keys().hasAll(['name', 'currentRound', 'status', 'updatedAt'])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 60
+        && request.resource.data.currentRound is int
+        && request.resource.data.currentRound >= 1
+        && request.resource.data.currentRound <= 9
+        && request.resource.data.status in ['playing', 'result', 'finished']
+        && (!('lastRoundRank' in request.resource.data)
+          || (request.resource.data.lastRoundRank is int && request.resource.data.lastRoundRank >= 1));
+      allow delete: if false;
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

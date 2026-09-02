@@ -9,8 +9,8 @@ export function renderFinalScreen(
 
   root.innerHTML = `
     <section class="screen final-screen">
-      <h1 class="final-title">${escapeHtml(displayName)}님, 9라운드 완료!</h1>
-      <p class="final-subtitle">전체 라운드 총 걸린 시간 (참고용, 순위 아님)</p>
+      <h1 class="final-title">${escapeHtml(displayName)}님, 9라운드를 모두 마쳤어요!</h1>
+      <p class="final-subtitle">9라운드 동안 걸린 시간</p>
       <p class="final-time">${totalSeconds}<span class="final-unit">초</span></p>
       <button class="final-restart" type="button">처음부터 다시 하기</button>
     </section>

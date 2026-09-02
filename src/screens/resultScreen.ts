@@ -19,7 +19,7 @@ export function renderResultScreen(
       <p class="result-round">${round} / ${TOTAL_ROUNDS} 라운드 완료!</p>
       <p class="result-time">${seconds}<span class="result-unit">초</span></p>
       <p class="result-rank" data-state="loading">등수 확인 중...</p>
-      <p class="result-next">${isLastRound ? "결과 정리 중..." : "잠시 후 다음 라운드로 이동합니다"}</p>
+      <p class="result-next">${isLastRound ? "결과를 정리하고 있어요" : "곧 다음 라운드로 넘어가요"}</p>
     </section>
   `;
 

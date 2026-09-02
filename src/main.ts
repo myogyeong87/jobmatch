@@ -2,6 +2,7 @@ import "./style.css";
 import { rounds } from "./data/rounds";
 import { claimDisplayName } from "./game/nameCounter";
 import { submitRoundResult } from "./game/leaderboard";
+import { updateSession } from "./game/session";
 import { renderStartScreen } from "./screens/startScreen";
 import { renderRoundScreen } from "./screens/roundScreen";
 import { renderResultScreen } from "./screens/resultScreen";
@@ -33,6 +34,10 @@ function showStartScreen(): void {
 }
 
 function showRound(round: number): void {
+  updateSession(state.displayName, round, "playing").catch((err) =>
+    console.error("[session] 상태 갱신 실패", err),
+  );
+
   const pairs = rounds[round - 1];
   renderRoundScreen(app, round, pairs, (timeMs) => {
     state.roundTimes.push(timeMs);
@@ -55,7 +60,12 @@ function showResult(round: number, timeMs: number): void {
   );
 
   submitRoundResult(round, state.displayName, timeMs)
-    .then((rank) => handle.showRank(rank))
+    .then((rank) => {
+      handle.showRank(rank);
+      updateSession(state.displayName, round, "result", rank).catch((err) =>
+        console.error("[session] 상태 갱신 실패", err),
+      );
+    })
     .catch((err) => {
       console.error("[leaderboard] 등수 계산 실패", err);
       handle.showRank(1);
@@ -63,6 +73,9 @@ function showResult(round: number, timeMs: number): void {
 }
 
 function showFinal(): void {
+  updateSession(state.displayName, rounds.length, "finished").catch((err) =>
+    console.error("[session] 상태 갱신 실패", err),
+  );
   renderFinalScreen(app, state.displayName, state.roundTimes, startGame);
 }
 
