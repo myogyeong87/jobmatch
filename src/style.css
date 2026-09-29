@@ -216,6 +216,8 @@ body {
 .card-text {
   width: 100%;
   text-align: left;
+  /* keep-all이라 띄어쓰기 없는 긴 직업명은 줄바꿈이 안 돼 카드 밖으로 넘친다. 넘칠 때만 글자 단위로 끊는다. */
+  overflow-wrap: anywhere;
 }
 
 /* 직업명 카드 — 웜톤(코랄) */
