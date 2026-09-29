@@ -449,7 +449,6 @@ function renderSessionPicker(message?: string): void {
         <input class="start-input" name="code" placeholder="세션 코드로 열기" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false" />
         <button type="submit" class="teacher-btn">열기</button>
       </form>
-      <p class="teacher-panel-desc">세션 기록은 만든 날부터 ${SESSION_TTL_DAYS}일 뒤 자동으로 삭제돼요.</p>
     </section>
   `;
 
@@ -639,8 +638,7 @@ function openSession(code: string): void {
 
     if (target.id === "new-session-btn") {
       const ok = window.confirm(
-        `새 세션을 시작할까요?\n지금 세션(${code})의 학생들은 새 QR로 다시 접속해야 해요. ` +
-          `지금 세션 기록은 ${SESSION_TTL_DAYS}일 뒤 자동으로 삭제돼요.`,
+        `새 세션을 시작할까요?\n지금 세션(${code})의 학생들은 새 QR로 다시 접속해야 해요.`,
       );
       if (!ok) return;
       target.disabled = true;
