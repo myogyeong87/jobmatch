@@ -1,13 +1,9 @@
 {
-  "indexes": [
-    {
-      "collectionGroup": "roundScores",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "round", "order": "ASCENDING" },
-        { "fieldPath": "timeMs", "order": "ASCENDING" }
-      ]
-    }
-  ],
-  "fieldOverrides": []
+  "indexes": [],
+  "fieldOverrides": [
+    { "collectionGroup": "sessions", "fieldPath": "expireAt", "ttl": true, "indexes": [] },
+    { "collectionGroup": "entries", "fieldPath": "expireAt", "ttl": true, "indexes": [] },
+    { "collectionGroup": "nameCounters", "fieldPath": "expireAt", "ttl": true, "indexes": [] },
+    { "collectionGroup": "players", "fieldPath": "expireAt", "ttl": true, "indexes": [] }
+  ]
 }

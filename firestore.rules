@@ -3,50 +3,87 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // 라운드별 순위표: 학생 기기에서 로그인 없이 기록을 남긴다.
-    // 생성만 허용하고, 이후 수정/삭제는 막아 학급 환경에서의 임의 변조를 최소화한다.
-    match /roundScores/{scoreId} {
-      allow read: if true;
-      allow create: if request.resource.data.keys().hasOnly(['round', 'name', 'timeMs', 'createdAt'])
-        && request.resource.data.round is int
-        && request.resource.data.round >= 1
-        && request.resource.data.round <= 9
-        && request.resource.data.name is string
-        && request.resource.data.name.size() > 0
-        && request.resource.data.name.size() <= 40
-        && request.resource.data.timeMs is number
-        && request.resource.data.timeMs > 0
-        && request.resource.data.timeMs <= 3600000;
-      allow update, delete: if false;
+    // 교사별 방(세션). 학생·교사 모두 로그인 없이 쓰므로, 경로를 세션 코드로 분리하고
+    // 각 문서에 허용하는 필드·값을 좁혀서 임의 변조를 최소화한다.
+    // 모든 문서의 expireAt은 TTL 정책(firestore.indexes.json)으로 자동 삭제에 쓰인다.
+
+    function validExpireAt() {
+      return request.resource.data.expireAt is timestamp
+        && request.resource.data.expireAt > request.time
+        && request.resource.data.expireAt < request.time + duration.value(400, 'd');
     }
 
-    // 동명이인 처리를 위한 이름별 접속 순번 카운터.
-    match /nameCounters/{baseName} {
-      allow read: if true;
-      allow create: if request.resource.data.keys().hasOnly(['count'])
-        && request.resource.data.count == 1;
-      allow update: if request.resource.data.keys().hasOnly(['count'])
-        && request.resource.data.count is int
-        && request.resource.data.count == resource.data.count + 1;
-      allow delete: if false;
+    // 하위 문서 쓰기는 세션이 있고 만료 전일 때만 허용한다.
+    function sessionActive(code) {
+      return get(/databases/$(database)/documents/sessions/$(code)).data.expireAt > request.time;
     }
 
-    // 교사 진행 현황 화면(teacher.html)이 실시간으로 읽는 학생별 현재 상태.
-    // 문서 ID = 학생 표시 이름. 학생 기기가 라운드 진행 중 계속 덮어쓴다(create/update만 허용).
-    match /sessions/{sessionId} {
+    match /sessions/{code} {
       allow read: if true;
-      allow create, update: if request.resource.data.keys().hasOnly(['name', 'currentRound', 'status', 'lastRoundRank', 'updatedAt'])
-        && request.resource.data.keys().hasAll(['name', 'currentRound', 'status', 'updatedAt'])
-        && request.resource.data.name is string
-        && request.resource.data.name.size() > 0
-        && request.resource.data.name.size() <= 60
-        && request.resource.data.currentRound is int
-        && request.resource.data.currentRound >= 1
-        && request.resource.data.currentRound <= 9
-        && request.resource.data.status in ['playing', 'result', 'finished']
-        && (!('lastRoundRank' in request.resource.data)
-          || (request.resource.data.lastRoundRank is int && request.resource.data.lastRoundRank >= 1));
+      allow create: if code.matches('^[A-Z0-9]{6}$')
+        && request.resource.data.keys().hasOnly(['started', 'paused', 'revealed', 'createdAt', 'expireAt', 'updatedAt'])
+        && request.resource.data.keys().hasAll(['createdAt', 'expireAt'])
+        && request.resource.data.createdAt == request.time
+        && validExpireAt();
+      // 교사 화면의 시작/일시정지/발표 스위치만 바꿀 수 있다(만료일은 고정).
+      allow update: if request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['started', 'paused', 'revealed', 'updatedAt'])
+        && (!('started' in request.resource.data) || request.resource.data.started is bool)
+        && (!('paused' in request.resource.data) || request.resource.data.paused is bool)
+        && (!('revealed' in request.resource.data) || request.resource.data.revealed is bool);
       allow delete: if false;
+
+      // 라운드별 순위표: 새 기록 추가만 허용하고 수정/삭제는 막는다.
+      match /rounds/{round}/entries/{entryId} {
+        allow read: if true;
+        allow create: if round.matches('^[1-9]$')
+          && sessionActive(code)
+          && request.resource.data.keys().hasOnly(['name', 'timeMs', 'createdAt', 'expireAt'])
+          && request.resource.data.keys().hasAll(['name', 'timeMs', 'createdAt', 'expireAt'])
+          && request.resource.data.name is string
+          && request.resource.data.name.size() > 0
+          && request.resource.data.name.size() <= 60
+          && request.resource.data.timeMs is number
+          && request.resource.data.timeMs > 0
+          && request.resource.data.timeMs <= 3600000
+          && validExpireAt();
+        allow update, delete: if false;
+      }
+
+      // 동명이인 처리를 위한 이름별 접속 순번 카운터.
+      match /nameCounters/{baseName} {
+        allow read: if true;
+        allow create: if sessionActive(code)
+          && request.resource.data.keys().hasOnly(['count', 'expireAt'])
+          && request.resource.data.count == 1
+          && validExpireAt();
+        allow update: if sessionActive(code)
+          && request.resource.data.keys().hasOnly(['count', 'expireAt'])
+          && request.resource.data.count is int
+          && request.resource.data.count == resource.data.count + 1
+          && validExpireAt();
+        allow delete: if false;
+      }
+
+      // 교사 진행 현황 화면이 실시간으로 읽는 학생별 현재 상태(문서 ID = 학생 표시 이름).
+      match /players/{playerId} {
+        allow read: if true;
+        allow create, update: if sessionActive(code)
+          && request.resource.data.keys().hasOnly(['name', 'currentRound', 'status', 'lastRoundRank', 'kicked', 'expireAt', 'updatedAt'])
+          && request.resource.data.keys().hasAll(['name', 'currentRound', 'status', 'expireAt', 'updatedAt'])
+          && request.resource.data.name is string
+          && request.resource.data.name.size() > 0
+          && request.resource.data.name.size() <= 60
+          && request.resource.data.currentRound is int
+          && request.resource.data.currentRound >= 1
+          && request.resource.data.currentRound <= 9
+          && request.resource.data.status in ['playing', 'result', 'finished']
+          && (!('lastRoundRank' in request.resource.data)
+            || (request.resource.data.lastRoundRank is int && request.resource.data.lastRoundRank >= 1))
+          && (!('kicked' in request.resource.data) || request.resource.data.kicked is bool)
+          && request.resource.data.expireAt is timestamp;
+        allow delete: if false;
+      }
     }
 
     match /{document=**} {

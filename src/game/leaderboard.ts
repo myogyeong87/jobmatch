@@ -1,14 +1,26 @@
 import {
   addDoc,
-  collection,
   getCountFromServer,
+  getDocs,
+  limit,
+  orderBy,
   query,
   serverTimestamp,
   where,
+  type CollectionReference,
 } from "firebase/firestore";
-import { db, firebaseConfigured } from "../firebase";
+import { firebaseConfigured } from "../firebase";
+import { activeSessionCollection, expireAtFromNow } from "./classSession";
 
-const SCORES_COLLECTION = "roundScores";
+export interface RoundBest {
+  name: string;
+  timeMs: number;
+}
+
+/** 현재 세션의 라운드별 기록 컬렉션: sessions/{code}/rounds/{n}/entries */
+export function roundEntries(round: number): CollectionReference {
+  return activeSessionCollection("rounds", String(round), "entries");
+}
 
 /**
  * 라운드 결과를 기록하고, 그 순간 기준 잠정 등수를 계산해 반환한다.
@@ -24,21 +36,27 @@ export async function submitRoundResult(
     return 1;
   }
 
-  const scoresRef = collection(db, SCORES_COLLECTION);
+  const entriesRef = roundEntries(round);
 
-  await addDoc(scoresRef, {
-    round,
+  await addDoc(entriesRef, {
     name,
     timeMs,
     createdAt: serverTimestamp(),
+    expireAt: expireAtFromNow(),
   });
 
-  const fasterQuery = query(
-    scoresRef,
-    where("round", "==", round),
-    where("timeMs", "<", timeMs),
-  );
-  const fasterCount = await getCountFromServer(fasterQuery);
+  const fasterCount = await getCountFromServer(query(entriesRef, where("timeMs", "<", timeMs)));
 
   return fasterCount.data().count + 1;
+}
+
+/** 해당 라운드의 현재 최고 기록(가장 빠른 시간)을 조회한다. 기록이 없으면 null. */
+export async function getRoundBest(round: number): Promise<RoundBest | null> {
+  if (!firebaseConfigured) return null;
+
+  const snap = await getDocs(query(roundEntries(round), orderBy("timeMs", "asc"), limit(1)));
+  if (snap.empty) return null;
+
+  const data = snap.docs[0].data() as { name: string; timeMs: number };
+  return { name: data.name, timeMs: data.timeMs };
 }
